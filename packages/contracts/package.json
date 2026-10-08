@@ -1,0 +1,16 @@
+{
+  "name": "@nexanft/contracts",
+  "version": "1.0.0",
+  "author": "Lakshay Dhiman",
+  "private": true,
+  "main": "dist/index.js",
+  "react-native": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  }
+}

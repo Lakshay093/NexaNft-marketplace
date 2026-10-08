@@ -1,0 +1,12 @@
+node_modules
+dist
+package-lock.json
+.expo
+docs/screenshots
+server/.data
+.test-artifacts
+**/dist
+mobile/android
+mobile/ios
+cloud-output
+**/.vercel

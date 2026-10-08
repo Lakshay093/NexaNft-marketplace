@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npm run build -w @nexanft/landing",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

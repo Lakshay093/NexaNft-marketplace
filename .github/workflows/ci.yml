@@ -1,0 +1,49 @@
+name: Verify NexaNFT
+on:
+  push:
+  pull_request:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: nexanft
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: nexanft_test
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U nexanft -d nexanft_test" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://nexanft:ci-only-password@localhost:5432/nexanft_test
+      JWT_SECRET: ci-only-secret-never-use-in-production-123456
+      STORAGE_DRIVER: local
+      STORAGE_PUBLIC_URL: http://localhost:4000/media
+      CORS_ORIGINS: http://localhost:5173,http://localhost:8081
+      ENABLE_DEMO_TRANSFERS: 'true'
+      EXPO_PUBLIC_ENABLE_DEMO_TRANSFERS: 'true'
+      EXPO_PUBLIC_API_URL: http://localhost:4000/api
+      E2E_MAIL_DIR: server/.data/outbox
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - run: npm run export -w mobile
+      - run: npx playwright install --with-deps chromium
+      - name: Verify browser workflows
+        run: |
+          npm run db:seed
+          npm start -w server > /tmp/nexanft-api.log 2>&1 &
+          npm run preview:mobile > /tmp/nexanft-mobile.log 2>&1 &
+          npm run dev:landing > /tmp/nexanft-landing.log 2>&1 &
+          node scripts/wait-ready.mjs
+          npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-previews
+          path: docs/screenshots

@@ -1,0 +1,14 @@
+import { Router } from 'express';
+import { authenticate } from '../middleware/auth';
+import * as controller from '../controllers/marketplace.controller';
+export const marketplaceRoutes = Router();
+const optionalAuth = authenticate(false);
+marketplaceRoutes.get('/nfts', optionalAuth, controller.nfts);
+marketplaceRoutes.get('/nfts/:id', optionalAuth, controller.detail);
+marketplaceRoutes.get('/search', optionalAuth, controller.nfts);
+marketplaceRoutes.get('/collections', controller.collections);
+marketplaceRoutes.get('/collections/:id', controller.collection);
+marketplaceRoutes.get('/collections/:id/nfts', optionalAuth, controller.collectionNFTs);
+marketplaceRoutes.get('/creators', controller.creators);
+marketplaceRoutes.get('/users/:id', controller.user);
+marketplaceRoutes.get('/users/:id/nfts', optionalAuth, controller.userNFTs);

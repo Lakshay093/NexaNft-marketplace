@@ -1,0 +1,6 @@
+{
+  "framework": null,
+  "buildCommand": "npm run export:web -w @nexanft/mobile -- --clear",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

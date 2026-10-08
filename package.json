@@ -1,0 +1,54 @@
+{
+  "name": "nexanft",
+  "version": "1.0.0",
+  "author": "Lakshay Dhiman",
+  "private": true,
+  "workspaces": [
+    "server",
+    "mobile",
+    "landing",
+    "packages/contracts"
+  ],
+  "engines": {
+    "node": ">=22.13 <25"
+  },
+  "scripts": {
+    "dev:server": "npm run dev -w server",
+    "dev:mobile": "npm run start -w mobile",
+    "dev:landing": "npm run dev -w landing",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build -w @nexanft/contracts && npm run build -w server && npm run build -w landing",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "db:generate": "npm run db:generate -w server",
+    "db:migrate": "npm run db:migrate -w server",
+    "db:seed": "npm run db:seed -w server",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "verify": "npm run typecheck && npm run lint && npm test && npm run build",
+    "preview:mobile": "node scripts/serve-mobile.mjs",
+    "cloud:prepare-sites": "node scripts/prepare-cloud-sites.mjs",
+    "test:e2e": "node tests/browser-smoke.mjs",
+    "postinstall": "npm run build -w @nexanft/contracts && npm run db:generate -w server"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.2",
+    "eslint": "^9.39.0",
+    "typescript-eslint": "^8.46.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "prettier": "^3.6.2",
+    "vitest": "^5.0.3",
+    "@types/node": "^22.18.0",
+    "concurrently": "^9.2.0",
+    "playwright": "^1.56.0",
+    "@testing-library/react": "^16.3.0",
+    "jsdom": "^26.1.0"
+  },
+  "overrides": {
+    "shell-quote": "^1.12.0",
+    "decode-uri-component": "^0.5.0",
+    "effect": "^3.20.0",
+    "uuid": "11.1.1"
+  }
+}

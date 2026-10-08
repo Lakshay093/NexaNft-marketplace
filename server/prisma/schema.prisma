@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+enum NFTStatus {
+  LISTED
+  SOLD
+  UNLISTED
+}
+enum ActivityType {
+  CREATED
+  UPDATED
+  UNLISTED
+  TRANSFERRED
+}
+model User {
+  id String @id @default(uuid()) @db.Uuid
+  email String @unique
+  username String @unique
+  fullName String
+  passwordHash String
+  bio String @default("")
+  avatarUrl String?
+  tokenVersion Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdNFTs NFT[] @relation("Creator")
+  ownedNFTs NFT[] @relation("Owner")
+  collections Collection[]
+  favorites Favorite[]
+  activities Activity[]
+  refreshTokens RefreshToken[]
+  resetTokens PasswordReset[]
+  notifications Notification[]
+  assets Asset[]
+  @@index([createdAt])
+}
+model NFT {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  description String
+  imageUrl String
+  price Decimal @db.Decimal(14,6)
+  currency String @default("ETH")
+  creatorId String @db.Uuid
+  ownerId String @db.Uuid
+  collectionId String? @db.Uuid
+  category String
+  status NFTStatus @default(LISTED)
+  viewsCount Int @default(0)
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  creator User @relation("Creator", fields:[creatorId], references:[id], onDelete:Restrict)
+  owner User @relation("Owner", fields:[ownerId], references:[id], onDelete:Restrict)
+  collection Collection? @relation(fields:[collectionId], references:[id], onDelete:SetNull)
+  favorites Favorite[]
+  activities Activity[]
+  notifications Notification[]
+  @@index([creatorId,createdAt])
+  @@index([ownerId,status])
+  @@index([collectionId])
+  @@index([deletedAt,status,category,createdAt])
+  @@index([status,price])
+}
+model Collection {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  description String
+  imageUrl String
+  creatorId String @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  creator User @relation(fields:[creatorId],references:[id],onDelete:Restrict)
+  nfts NFT[]
+  @@unique([creatorId,name])
+  @@index([createdAt])
+}
+model Favorite {
+  userId String @db.Uuid
+  nftId String @db.Uuid
+  createdAt DateTime @default(now())
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  nft NFT @relation(fields:[nftId],references:[id],onDelete:Cascade)
+  @@id([userId,nftId])
+  @@index([nftId])
+  @@index([userId,createdAt])
+}
+model Activity {
+  id String @id @default(uuid()) @db.Uuid
+  type ActivityType
+  actorId String @db.Uuid
+  nftId String @db.Uuid
+  createdAt DateTime @default(now())
+  actor User @relation(fields:[actorId],references:[id],onDelete:Restrict)
+  nft NFT @relation(fields:[nftId],references:[id],onDelete:Restrict)
+  @@index([createdAt])
+  @@index([nftId,createdAt])
+  @@index([actorId,createdAt])
+}
+model RefreshToken {
+  id String @id @default(uuid()) @db.Uuid
+  tokenHash String @unique
+  familyId String @db.Uuid
+  userId String @db.Uuid
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  @@index([userId])
+  @@index([familyId])
+  @@index([expiresAt])
+}
+model PasswordReset {
+  id String @id @default(uuid()) @db.Uuid
+  tokenHash String @unique
+  userId String @db.Uuid
+  expiresAt DateTime
+  usedAt DateTime?
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  @@index([expiresAt])
+}
+model Notification {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  nftId String? @db.Uuid
+  title String
+  body String
+  readAt DateTime?
+  createdAt DateTime @default(now())
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  nft NFT? @relation(fields:[nftId],references:[id],onDelete:SetNull)
+  @@index([userId,readAt,createdAt])
+}
+model Asset {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  key String @unique
+  url String
+  purpose String
+  mimeType String
+  size Int
+  createdAt DateTime @default(now())
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  @@index([userId,createdAt])
+}
